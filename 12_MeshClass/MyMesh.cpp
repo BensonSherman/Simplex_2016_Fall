@@ -83,10 +83,10 @@ void MyMesh::AddVertexColor(vector3 a_v3Input)
 }
 void MyMesh::CompileOpenGL3X(void)
 {
-	if (m_bBinded)
+	if (m_bBinded)//it's already binded
 		return;
 
-	if (m_uVertexCount == 0)
+	if (m_uVertexCount < 3 )//Can't render an object with less than 3
 		return;
 
 	CompleteMesh();
@@ -98,8 +98,10 @@ void MyMesh::CompileOpenGL3X(void)
 		//Color
 		m_lVertex.push_back(m_lVertexCol[i]);
 	}
+	//sending data to the memory card
 	glGenVertexArrays(1, &m_VAO);//Generate vertex array object
 	glGenBuffers(1, &m_VBO);//Generate Vertex Buffered Object
+
 
 	glBindVertexArray(m_VAO);//Bind the VAO
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);//Bind the VBO
@@ -153,7 +155,7 @@ void MyMesh::AddTri(vector3 a_vBottomLeft, vector3 a_vBottomRight, vector3 a_vTo
 {
 	//C
 	//| \
-		//A--B
+	//A--B
 //This will make the triangle A->B->C 
 	AddVertexPosition(a_vBottomLeft);
 	AddVertexPosition(a_vBottomRight);

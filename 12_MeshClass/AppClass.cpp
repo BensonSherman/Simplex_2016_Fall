@@ -1,4 +1,5 @@
 #include "AppClass.h"
+matrix4 m_m4Object1 = matrix4(IDENTITY_M4);
 void Application::InitVariables(void)
 {
 	////Change this to your name and email
@@ -14,6 +15,8 @@ void Application::InitVariables(void)
 	//Make MyMesh object
 	m_pMesh1 = new MyMesh();
 	m_pMesh1->GenerateCube(1.0f, C_WHITE);
+
+	
 }
 void Application::Update(void)
 {
@@ -31,8 +34,15 @@ void Application::Display(void)
 	// Clear the screen
 	ClearScreen();
 
-	m_pMesh->Render(m_pCameraMngr->GetProjectionMatrix(), m_pCameraMngr->GetViewMatrix(), ToMatrix4(m_qArcBall));
+	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix();
+	matrix4 m4view = m_pCameraMngr->GetViewMatrix();
+
+	
+
+	m_pMesh->Render(m4Projection, m4view, m_m4Object1);
 	m_pMesh1->Render(m_pCameraMngr->GetProjectionMatrix(), m_pCameraMngr->GetViewMatrix(), glm::translate(vector3( 3.0f, 0.0f, 0.0f)));
+
+	m_m4Object1 = m_m4Object1 * glm::translate(vector3(0.1f, 0, 0))* glm::rotate(matrix4(IDENTITY_M4),0.1f, AXIS_Y);
 		
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();

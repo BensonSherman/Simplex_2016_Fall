@@ -275,8 +275,26 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Release();
 	Init();
 
+	//two points that we know will be there and were they will be placed
+	vector3 centerBottom = vector3(0.0f, 0.0f, 0.0f);
+	vector3 centerTop = vector3(0.0f, a_fHeight, 0.0f);
+
+	//trig to figure out points
+	float theta = 2*3.141592 / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++) {
+		//x is x, z is y, if you looked down on the circle we're making
+		//cos to find x, then multiple by radius, sin to find y, same with radius
+		vector3 point1(cos(theta*i)*a_fRadius, 0.0f, sin(theta*i)*a_fRadius);
+		vector3 point2(cos(theta*(i + 1))*a_fRadius, 0.0f, sin(theta*(i + 1))*a_fRadius);
+		//bottom face triangle
+		AddTri(point1, point2, centerBottom);
+		//side triangle
+		AddTri(point2, point1, centerTop);
+	}
+
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fRadius * 2.0f, a_v3Color);
 	// -------------------------------
 
 	// Adding information about color
@@ -299,8 +317,31 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Release();
 	Init();
 
+	//two points that will be there
+	vector3 centerBottom = vector3(0.0f, 0.0f, 0.0f);
+	vector3 centerTop = vector3(0.0f, a_fHeight, 0.0f);
+
+	//trig to figure out points
+	float theta = 2 * 3.141592 / a_nSubdivisions;
+
+	for (int i = 1; i <= a_nSubdivisions; i++) {
+		//x is x, z is y, if you looked down on the circle we're making
+		//cos to find x, then multiple by radius, sin to find y, same with radius
+		vector3 point1(cos(theta*i)*a_fRadius, 0.0f, sin(theta*i)*a_fRadius);
+		vector3 point2(cos(theta*(i + 1))*a_fRadius, 0.0f, sin(theta*(i + 1))*a_fRadius);
+		vector3 point3(cos(theta*i)*a_fRadius, a_fHeight, sin(theta*i)*a_fRadius);
+		vector3 point4(cos(theta*(i + 1))*a_fRadius, a_fHeight, sin(theta*(i + 1))*a_fRadius);
+		//wall of cylinder
+		AddQuad( point3, point4, point1, point2);
+		//bottom face triangle
+		AddTri(point1, point2, centerBottom);
+		//top face triangle
+		AddTri(point4, point3, centerTop);
+	}
+
+
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fRadius * 2.0f, a_v3Color);
 	// -------------------------------
 
 	// Adding information about color
@@ -329,9 +370,32 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//trig to figure out points
+	float theta = 2 * 3.141592 / a_nSubdivisions;
+
+
+	for (int i = 1; i <= a_nSubdivisions; i++) {
+		//x is x, z is y, if you looked down on the circle we're making
+		//cos to find x, then multiple by radius, sin to find y, same with radius
+		//outer points
+		vector3 point1(cos(theta*i)*a_fOuterRadius, 0.0f, sin(theta*i)*a_fOuterRadius);
+		vector3 point2(cos(theta*(i + 1))*a_fOuterRadius, 0.0f, sin(theta*(i + 1))*a_fOuterRadius);
+		vector3 point3(cos(theta*i)*a_fOuterRadius, a_fHeight, sin(theta*i)*a_fOuterRadius);
+		vector3 point4(cos(theta*(i + 1))*a_fOuterRadius, a_fHeight, sin(theta*(i + 1))*a_fOuterRadius);
+		//inner points
+		vector3 point5(cos(theta*i)*a_fInnerRadius, 0.0f, sin(theta*i)*a_fInnerRadius);
+		vector3 point6(cos(theta*(i + 1))*a_fInnerRadius, 0.0f, sin(theta*(i + 1))*a_fInnerRadius);
+		vector3 point7(cos(theta*i)*a_fInnerRadius, a_fHeight, sin(theta*i)*a_fInnerRadius);
+		vector3 point8(cos(theta*(i + 1))*a_fInnerRadius, a_fHeight, sin(theta*(i + 1))*a_fInnerRadius);
+		//Outer wall 
+		AddQuad(point3, point4, point1, point2);
+		//bottom face quad
+		AddQuad(point1, point2, point5,point6);
+		//top face Quad
+		AddQuad(point4, point3, point8, point7);
+		//Inner wall
+		AddQuad(point5, point6, point7, point8);
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -375,10 +439,10 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		a_fRadius = 0.01f;
 
 	//Sets minimum and maximum of subdivisions
-	if (a_nSubdivisions < 1)
+	
+	if (a_nSubdivisions < 3)
 	{
-		GenerateCube(a_fRadius * 2.0f, a_v3Color);
-		return;
+		a_nSubdivisions = 1;
 	}
 	if (a_nSubdivisions > 6)
 		a_nSubdivisions = 6;
@@ -386,8 +450,10 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Release();
 	Init();
 
+
+
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fRadius * 2.0f, a_v3Color);
 	// -------------------------------
 
 	// Adding information about color

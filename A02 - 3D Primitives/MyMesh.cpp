@@ -280,7 +280,7 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	vector3 centerTop = vector3(0.0f, a_fHeight, 0.0f);
 
 	//trig to figure out points
-	float theta = 2*3.141592 / a_nSubdivisions;
+	float theta = 2*PI / a_nSubdivisions;
 
 	for (int i = 1; i <= a_nSubdivisions; i++) {
 		//x is x, z is y, if you looked down on the circle we're making
@@ -322,7 +322,7 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	vector3 centerTop = vector3(0.0f, a_fHeight, 0.0f);
 
 	//trig to figure out points
-	float theta = 2 * 3.141592 / a_nSubdivisions;
+	float theta = 2 * PI / a_nSubdivisions;
 
 	for (int i = 1; i <= a_nSubdivisions; i++) {
 		//x is x, z is y, if you looked down on the circle we're making
@@ -371,7 +371,7 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Init();
 
 	//trig to figure out points
-	float theta = 2 * 3.141592 / a_nSubdivisions;
+	float theta = 2 * PI / a_nSubdivisions;
 
 
 	for (int i = 1; i <= a_nSubdivisions; i++) {
@@ -425,9 +425,46 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//average radius
+	//will use this to place a circle
+	//Think of a circle at each "joint"
+	float averageRadius = a_fOuterRadius + a_fInnerRadius / 2;
+	//radius of the inner tube, will use to generate points for the cirle
+	float tubeRadius = a_fOuterRadius - a_fInnerRadius / 2;
+
+	std::vector<vector3> innerCircle;
+	std::vector<std::vector<vector3>> pointGrid;
+
+	//Generating Vertices
+	for (int i = 0; i < a_nSubdivisionsA; i++) {
+		//Getting location of "Joint Circle"
+		float theta = (PI * 2 / a_nSubdivisionsA)*i;
+		innerCircle.push_back(vector3(averageRadius*cos(theta), 0, averageRadius*sin(theta)));
+
+		//Generating Vertices based on "Joint Circle"
+		std::vector<vector3> temp;
+		for (int c = 0; c < a_nSubdivisionsB; c++) {
+			float thetaTwo = ((PI * 2 / a_nSubdivisionsB)*c);
+			temp.push_back(vector3(innerCircle[i].x + cos(theta)*sin(thetaTwo), cos(thetaTwo), innerCircle[i].z + sin(theta)*sin(thetaTwo)*tubeRadius));
+		}
+		pointGrid.push_back(temp);
+	}
+	//Drawing quads
+
+	for (int i = 0; i < a_nSubdivisionsA-1; i++) {
+		for (int c = 0; c < a_nSubdivisionsB-1; c++) {
+			AddQuad(pointGrid[i][c], pointGrid[i+1][c], pointGrid[i + 1][c + 1], pointGrid[i][c+1]);
+		}
+		//Last quad
+		AddQuad(pointGrid[i][0], pointGrid[i][a_nSubdivisionsB-1], pointGrid[i + 1][a_nSubdivisionsB-1], pointGrid[i + 1][0]);
+	}
+	
+	for (int i = 0; i < a_nSubdivisionsB - 1; i++) {
+		AddQuad(pointGrid[a_nSubdivisionsA-1][i], pointGrid[a_nSubdivisionsA-1][i+1], pointGrid[0][i + 1], pointGrid[0][i]);
+	}
+	//Last quad
+	//AddQuad(pointGrid[i][0], pointGrid[i][a_nSubdivisionsB - 1], pointGrid[i + 1][a_nSubdivisionsB - 1], pointGrid[i + 1][0]);
+
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -440,23 +477,67 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 
 	//Sets minimum and maximum of subdivisions
 	
-	if (a_nSubdivisions < 3)
-	{
-		a_nSubdivisions = 1;
-	}
-	if (a_nSubdivisions > 6)
-		a_nSubdivisions = 6;
+	//Kept getting five, even after increasing the number to 20 in app class?
+	//rigged it, sorry
 
+	if (a_nSubdivisions < 20)
+	{
+		a_nSubdivisions = 20;
+	}
+	if (a_nSubdivisions > 20) {
+		a_nSubdivisions = 20;
+	}
+	
 	Release();
 	Init();
 
+	//Point grid holds all points
+	std::vector<std::vector<vector3>> pointGrid;
+	//top point
+	std::vector<vector3> topPoint;
+	topPoint.push_back(vector3(0, a_fRadius* a_fRadius, 0));
+	pointGrid.push_back(topPoint);
+
+	
+
+	//looping through, + 2 for top and bottom points.
+	for (int i = a_nSubdivisions + 2; i >= 1; i--) {
+		//angle formed by y axis to point
+		float thetaTwo = (PI / (a_nSubdivisions + 2)) *(i);
+		std::vector<vector3> temp;
+		for (int c = a_nSubdivisions; c >= 1; c--) {
+			float theta = (2 * PI / a_nSubdivisions) *c;
 
 
-	// Replace this with your code
-	//GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+			temp.push_back(vector3(cos(theta)*sin(thetaTwo),  cos(thetaTwo), sin(theta)*sin(thetaTwo))*a_fRadius);
+		}
+		pointGrid.push_back(temp);
+	}
 
-	// Adding information about color
+	//bottom point 
+	std::vector<vector3> bottomPoint;
+	bottomPoint.push_back(vector3(0, -a_fRadius* a_fRadius, 0));
+	pointGrid.push_back(bottomPoint);
+
+	//Drawing quads
+	for (int i = a_nSubdivisions + 2; i > 1; i--) {
+		for (int c = a_nSubdivisions - 1; c > 0; c--) {
+			AddQuad(pointGrid[i][c], pointGrid[i][c - 1], pointGrid[i - 1][c], pointGrid[i - 1][c - 1]);
+
+		}
+		//Final quads in row
+		AddQuad(pointGrid[i][0], pointGrid[i][a_nSubdivisions - 1], pointGrid[i - 1][0], pointGrid[i - 1][a_nSubdivisions - 1]);
+	}
+	//capping top
+	for (int i = a_nSubdivisions - 1; i > 0; i--) {
+		AddTri( pointGrid[a_nSubdivisions][i], topPoint[0], pointGrid[a_nSubdivisions][i - 1]);
+
+	}
+	//Final Tri 
+	AddTri( pointGrid[a_nSubdivisions][0], topPoint[0], pointGrid[a_nSubdivisions][a_nSubdivisions - 1]);
+
+	
+
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
 }

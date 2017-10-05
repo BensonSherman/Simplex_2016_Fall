@@ -58,17 +58,30 @@ void Application::Display(void)
 	vector3 v3CurrentPos;
 	
 
-
-
-
-	//your code goes here
-	v3CurrentPos = vector3(0.0f, 0.0f, 0.0f);
-	//-------------------
 	
 
+	vector3 v3Start; 
+	vector3 v3End; 
+	static uint route = 0;
+	v3Start = m_stopsList[route];
+	v3End = m_stopsList[(route + 1) % m_stopsList.size()]; 
+
+	float fPercentage = MapValue(fTimer, 0.0f, 2.0f, 0.0f, 1.0f);
 
 	
+	v3CurrentPos = glm::lerp(v3Start, v3End, fPercentage);
+
+
 	matrix4 m4Model = glm::translate(v3CurrentPos);
+
+
+	if (fPercentage >= 1.0f)
+	{
+		route++; 
+		fTimer = m_pSystem->GetDeltaTime(uClock);
+		route %= m_stopsList.size();
+	}
+
 	m_pModel->SetModelMatrix(m4Model);
 
 	m_pMeshMngr->Print("\nTimer: ");//Add a line on top

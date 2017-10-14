@@ -1,8 +1,9 @@
 #include "AppClass.h"
+
 void Application::InitVariables(void)
 {
 	////Change this to your name and email
-	//m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
+	m_sProgrammer = "Benson Sherman - bcs4985@rit.edu";
 
 	////Alberto needed this at this position for software recording.
 	//m_pWindow->setPosition(sf::Vector2i(710, 0));
@@ -26,7 +27,7 @@ void Application::InitVariables(void)
 		m_uOrbits = 7;
 
 	float fSize = 1.0f; //initial size of orbits
-
+	float fRadius = 0.95f;
 	//creating a color using the spectrum 
 	uint uColor = 650; //650 is Red
 	//prevent division by 0
@@ -35,12 +36,42 @@ void Application::InitVariables(void)
 		This part will create the orbits, it start at 3 because that is the minimum subdivisions a torus can have
 	*/
 	uint uSides = 3; //start with the minimal 3 sides
+	//list of lists, sudo-grid
+	
 	for (uint i = uSides; i < m_uOrbits + uSides; i++)
 	{
 		vector3 v3Color = WaveLengthToRGB(uColor); //calculate color based on wavelength
 		m_shapeList.push_back(m_pMeshMngr->GenerateTorus(fSize, fSize - 0.1f, 3, i, v3Color)); //generate a custom torus and add it to the meshmanager
+		//list to be filled
+		std::vector<vector3> pointList;
+		//filling the middle of the tarus
+		float fMiddle = fSize - 0.05f;
+		float fTheta = (PI * 2) / i;
+		for (int c = 0; c < i; c++) {
+			//Making a circle, standing up
+			//cos to find x, then multiple by radius, sin to find y, same with radius
+			pointList.push_back(vector3(cos(fTheta*c)*fMiddle, sin(fTheta*c)*fMiddle, 0.0f));
+			
+	
+		}
+		//adding the point list to the grid
+		pointGrid.push_back(pointList);
+
+		
 		fSize += 0.5f; //increment the size for the next orbit
 		uColor -= static_cast<uint>(decrements); //decrease the wavelength
+	}
+	//using to genrate a list of routes based on the cirle we're moving
+	
+	for (int i = 0; i < m_uOrbits; i++) {
+		fRoutes.push_back(0);
+	}
+
+	for (int i = 0; i < m_uOrbits; i++) {
+		fTimers.push_back(0);
+	}
+	for (int i = 0; i < m_uOrbits; i++) {
+		uClocks.push_back(m_pSystem->GenClock());
 	}
 }
 void Application::Update(void)
@@ -59,21 +90,60 @@ void Application::Display(void)
 	// Clear the screen
 	ClearScreen();
 
+	
+	static float fUniversalTimer = 0;//making a universal timer for output on screen
+	static uint uClock = m_pSystem->GenClock(); //generate a new clock for that timer
+	
+	fUniversalTimer += m_pSystem->GetDeltaTime(uClock);
+
+	m_pMeshMngr->Print("\nTimer: ");//Add a line on top
+	m_pMeshMngr->PrintLine(std::to_string(fUniversalTimer), C_YELLOW);//just using first timer 
+
+
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix(); //view Matrix
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix(); //Projection Matrix
 	matrix4 m4Offset = IDENTITY_M4; //offset of the orbits, starts as the global coordinate system
 	/*
 		The following offset will orient the orbits as in the demo, start without it to make your life easier.
 	*/
-	//m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
-
+	m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
+	//storing current position
+	vector3 v3CurrentPos;
 	// draw a shapes
-	for (uint i = 0; i < m_uOrbits; ++i)
+	for (uint i = 0; i < m_uOrbits; i++)
 	{
 		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 90.0f, AXIS_X));
 
-		//calculate the current position
-		vector3 v3CurrentPos = ZERO_V3;
+		
+		fTimers[i] += m_pSystem->GetDeltaTime(uClocks[i]); //get the delta time for that time
+
+
+
+
+		//getting the start at  
+		
+		vector3 v3Start = pointGrid[i][fRoutes[i]];
+		vector3 v3End = pointGrid[i][(fRoutes[i] + 1)% (i + 3)];
+		
+		
+		//mapping value to time scale of 2
+		float fPercentage = MapValue(fTimers[i], 0.0f, 2.0f, 0.0f, 1.0f);
+
+		//lerping
+		v3CurrentPos = glm::lerp(v3Start, v3End, fPercentage);
+
+
+		
+
+		//checking to see if we need to go to the next route
+		if (fPercentage >= 1.0f)
+		{
+			fRoutes[i]++;
+			fTimers[i] = m_pSystem->GetDeltaTime(uClock);
+			fRoutes[i] %= (i+3);
+		}
+		
+		
 		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
 
 		//draw spheres

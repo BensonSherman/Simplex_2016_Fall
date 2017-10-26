@@ -48,15 +48,21 @@ void Application::Display(void)
 	//draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
 
+	matrix4 m4Projection;
+	matrix4 m4View;
+
 	//calculate view and projection
 	switch (m_uProjection)
 	{
 	default:
 	case 1:
 		m_pCamera->ResetCamera();
+		m_pCamera->CalculateProjectionMatrix();
+		m_pCamera->CalculateViewMatrix();
 		break;
 	case 2:
 		m_pCamera->ResetCamera();
+		m4Projection = glm::ortho(-10,10)
 		break;
 	case 3:
 		m_pCamera->ResetCamera();
@@ -75,8 +81,7 @@ void Application::Display(void)
 		break;
 	}
 
-	m_pCamera->CalculateProjectionMatrix();
-	m_pCamera->CalculateViewMatrix();
+	
 
 	//draw the primitive
 	m_pMesh1->Render(m_pCamera, glm::rotate(IDENTITY_M4, 90.0f, AXIS_X));

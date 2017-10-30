@@ -16,6 +16,7 @@ class Application
 {
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 	MyMesh* m_pMesh = nullptr;
+	quaternion m_qOrientation; //orientation for the Model in quaternions
 
 private:
 	static ImGuiObject gui; //GUI object
@@ -30,6 +31,7 @@ private:
 
 	vector4 m_v4ClearColor; //Color of the scene
 	bool m_bRunning = false; //Is app running?
+	
 
 	sf::Window* m_pWindow = nullptr; //SFML window
 	Simplex::SystemSingleton* m_pSystem = nullptr; //Singleton of the system

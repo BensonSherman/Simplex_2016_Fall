@@ -53,15 +53,25 @@ void Application::Display(void)
 	//draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
 
-	static float fPos = 0.0f;
-	m_pCamera->SetPosition(vector3(fPos, 0.0f, 10.0f));
-	m_pCamera->SetTarget(vector3(fPos, 0.0f, 9.0f));
-	fPos -= 0.01f;
+	//static float fPos = 0.0f;
+	//m_pCamera->SetPosition(vector3(fPos, 0.0f, 10.0f));
+	//m_pCamera->SetTarget(vector3(fPos, 0.0f, 9.0f));
+	//fPos -= 0.01f;
+
+	vector3 v3LookingAt = m_v3CameraPosition;
+	v3LookingAt -= 1.0f;
+	float fRatio = m_pSystem->GetWindowRatio();
+
+	matrix4 m4Projection = glm::ortho(-10.0f,10.0f,-20.0f,20.0f,0.1f,1000.0f);
+	matrix4 m4View = glm::lookAt(vector3(0,0,30)+m_v3CameraPosition, vector3(0, 0, 0)+v3LookingAt, vector3(0, 1, 0));
+	matrix4 m4Model= ToMatrix4(m_qArcBall);
+
+	m_pMesh->Render(m4Projection, m4View, m4Model);
 
 	//draw the primitive
 	//m_pMesh->Render(m_pCamera->GetProjectionMatrix(), m_pCamera->GetViewMatrix(), ToMatrix4(m_qArcBall));
 	//m_pMesh->Render(m_pCamera, ToMatrix4(m_qArcBall));
-	m_pMesh2->Render(m_pCamera, glm::translate(vector3(0.0f, 0.0f, -5.0f)));
+	
 
 	//render list call
 	m_uRenderCallCount = m_pMeshMngr->Render();

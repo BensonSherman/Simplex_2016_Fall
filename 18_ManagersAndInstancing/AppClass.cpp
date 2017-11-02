@@ -1,4 +1,5 @@
 #include "AppClass.h"
+
 using namespace Simplex;
 void Application::InitVariables(void)
 {
@@ -23,6 +24,9 @@ void Application::InitVariables(void)
 	m_pMyMeshMngr = MyMeshManager::GetInstance();
 	m_pMyMeshMngr->SetCamera(m_pCamera);
 	
+	MyMesh 
+
+	m_pRB = new MyRigidBody(m_pMesh);
 	
 }
 void Application::Update(void)
@@ -53,6 +57,12 @@ void Application::Display(void)
 	//Clear the screen
 	ClearScreen();
 
+
+	//*m_m4list[0] = ToMatrix4(m_qArcBall);
+	//m_pMesh->Render(m_pCamera, m_m4LIst);
+
+	m_pRB.Render(m_pCamera);
+
 	//Render the list of MyMeshManager
 	m_pMyMeshMngr->Render();
 
@@ -78,6 +88,7 @@ void Application::Release(void)
 
 	//release the camera
 	SafeDelete(m_pCamera);
+
 
 	//release GUI
 	ShutdownGUI();

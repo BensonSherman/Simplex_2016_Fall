@@ -344,31 +344,65 @@ void Application::CameraRotation(float a_fSpeed)
 	MouseY = pt.y;
 
 	//Calculate the difference in view with the angle
-	float fAngleX = 0.0f;
-	float fAngleY = 0.0f;
+	fAngleX = 0.0f;
+	fAngleY = 0.0f;
 	float fDeltaMouse = 0.0f;
 	if (MouseX < CenterX)
 	{
 		fDeltaMouse = static_cast<float>(CenterX - MouseX);
 		fAngleY += fDeltaMouse * a_fSpeed;
+		//rotating in this case, not on frames we aren't moving the mouse with the right button held down
+		m_m4Orientation *= glm::toMat4(glm::angleAxis(fAngleY, vector3(0.0f, 1.0f, 0.0f)));
+		//forward vector
+		vector4 temp = m_m4Orientation* vector4(m_v3CameraForward, 1.0f);
+		m_v3CameraForward = vector3(temp);
+		//target Vector
+		temp = m_m4Orientation*vector4(m_v3CameraUp, 1.0f);
+		m_v3CameraUp = vector3(temp);
 	}
 	else if (MouseX > CenterX)
 	{
 		fDeltaMouse = static_cast<float>(MouseX - CenterX);
 		fAngleY -= fDeltaMouse * a_fSpeed;
+		m_m4Orientation *= glm::toMat4(glm::angleAxis(fAngleY, vector3(0.0f,1.0f,0.0f)));
+		//forward vector
+		vector4 temp = m_m4Orientation* vector4(m_v3CameraForward, 1.0f);
+		m_v3CameraForward = vector3(temp);
+		//target Vector
+		temp = m_m4Orientation*vector4(m_v3CameraUp, 1.0f);
+		m_v3CameraUp = vector3(temp);
 	}
 
 	if (MouseY < CenterY)
 	{
 		fDeltaMouse = static_cast<float>(CenterY - MouseY);
 		fAngleX -= fDeltaMouse * a_fSpeed;
+		m_m4Orientation *= glm::toMat4(glm::angleAxis(fAngleX, vector3(1.0f,0.0f,0.0f)));
+		//forward vector
+		vector4 temp = m_m4Orientation* vector4(m_v3CameraForward, 1.0f);
+		m_v3CameraForward = vector3(temp);
+		//target Vector
+		temp = m_m4Orientation*vector4(m_v3CameraUp, 1.0f);
+		m_v3CameraUp = vector3(temp);
+		
 	}
 	else if (MouseY > CenterY)
 	{
 		fDeltaMouse = static_cast<float>(MouseY - CenterY);
 		fAngleX += fDeltaMouse * a_fSpeed;
+		m_m4Orientation *= glm::toMat4(glm::angleAxis(fAngleX, vector3(1.0f,0.0f,0.0f)));
+		//forward vector
+		vector4 temp = m_m4Orientation* vector4(m_v3CameraForward, 1.0f);
+		m_v3CameraForward = vector3(temp);
+		//target Vector
+		temp = m_m4Orientation*vector4(m_v3CameraUp, 1.0f);
+		m_v3CameraUp = vector3(temp);
+		
 	}
 	//Change the Yaw and the Pitch of the camera
+	//if the right mouse button is clicked
+	
+
 	SetCursorPos(CenterX, CenterY);//Position the mouse in the center
 }
 //Keyboard
@@ -390,10 +424,51 @@ void Application::ProcessKeyboard(void)
 //Joystick
 void Application::ProcessJoystick(void)
 {
-	/*
-	This is used for things that are continuously happening,
-	for discreet on/off use ProcessJoystickPressed/Released
-	*/
+	//speed for movement 
+	float fSpeed = 0.1f;
+
+	//keyboard controls for  moving the camera and it's target
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+
+		m_v3CameraPosition.z += fSpeed;
+		//m_v3CameraTarget.z += fSpeed;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+	
+		m_v3CameraPosition.z -= fSpeed;
+		//m_v3CameraTarget.z -= fSpeed;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+	
+		m_v3CameraPosition.x += fSpeed;
+		//m_v3CameraTarget.x += fSpeed;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+		
+		m_v3CameraPosition.x -= fSpeed;
+		//m_v3CameraTarget.x -= fSpeed;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+	
+		m_v3CameraPosition.y -= fSpeed;
+		//m_v3CameraTarget.y -= fSpeed;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
+		
+		m_v3CameraPosition.y += fSpeed;
+		//m_v3CameraTarget.y += fSpeed;
+
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad6)) {
+
+		
+		//m_v3CameraTarget.y += fSpeed;
+
+	}
 #pragma region Camera Position
 	float fForwardSpeed = m_pController[m_uActCont]->axis[SimplexAxis_Y] / 150.0f;
 	float fHorizontalSpeed = m_pController[m_uActCont]->axis[SimplexAxis_X] / 150.0f;

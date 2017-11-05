@@ -11,13 +11,22 @@ void Application::InitVariables(void)
 	//Set the position and target of the camera
 	//(I'm at [0,0,10], looking at [0,0,0] and up is the positive Y axis)
 	m_pCameraMngr->SetPositionTargetAndUp(AXIS_Z * 10.0f, ZERO_V3, AXIS_Y);
-
+	m_v3CameraPosition = vector3(0.0f, 3.0f, 20.0f);
+	m_v3CameraTarget = vector3(0.0f, 3.0f, 19.0f);
+	//forward vector
+	m_v3CameraForward = vector3(0.0f, 0.0f, 1.0f);
+	m_v3CameraUp = AXIS_Y;
+	//Orientation matrix
+	m_m4Orientation = IDENTITY_M4;
 	//init the camera
 	m_pCamera = new MyCamera();
 	m_pCamera->SetPositionTargetAndUp(
 			vector3(0.0f, 3.0f, 20.0f), //Where my eyes are
 			vector3(0.0f, 3.0f, 19.0f), //where what I'm looking at is
 			AXIS_Y);					//what is up
+
+	fAngleX = 0.0f;
+	fAngleY = 0.0f;
 
 	//Get the singleton
 	m_pMyMeshMngr = MyMeshManager::GetInstance();
@@ -45,6 +54,19 @@ void Application::Update(void)
 }
 void Application::Display(void)
 {
+	
+	
+
+	
+
+	//setting camera target here
+	m_v3CameraTarget = m_v3CameraPosition+m_v3CameraForward;
+
+	
+	m_pCamera->SetPositionTargetAndUp(m_v3CameraTarget, m_v3CameraPosition, m_v3CameraUp);
+
+	
+
 	//Clear the screen
 	ClearScreen();
 

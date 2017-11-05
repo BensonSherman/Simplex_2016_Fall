@@ -20,6 +20,13 @@ class Application
 	MyMeshManager* m_pMyMeshMngr = nullptr; //My Mesh Manager
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu"; //Programmer
 private:
+	vector3 m_v3CameraPosition;
+	vector3 m_v3CameraTarget;
+	vector3 m_v3CameraForward;
+	vector3 m_v3CameraUp;
+	matrix4 m_m4Orientation;
+
+
 	static ImGuiObject gui; //GUI object
 
 	uint m_uRenderCallCount = 0; //count of render calls per frame
@@ -29,6 +36,11 @@ private:
 	bool m_bFPC = false;// First Person Camera flag
 	bool m_bArcBall = false;// Arcball flag
 	quaternion m_qArcBall; //ArcBall quaternion
+
+	float fAngleX;
+	float fAngleY;
+
+
 
 	vector4 m_v4ClearColor; //Color of the scene
 	bool m_bRunning = false; //Is app running?

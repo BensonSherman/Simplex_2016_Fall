@@ -12,10 +12,11 @@ void Application::InitVariables(void)
 	//(I'm at [0,0,10], looking at [0,0,0] and up is the positive Y axis)
 	m_pCameraMngr->SetPositionTargetAndUp(AXIS_Z * 10.0f, ZERO_V3, AXIS_Y);
 	m_v3CameraPosition = vector3(0.0f, 3.0f, 20.0f);
-	m_v3CameraTarget = vector3(0.0f, 3.0f, 19.0f);
+	m_v3CameraTarget = vector3(0.0f, 3.0f, 21.0f);
 	//forward vector
 	m_v3CameraForward = vector3(0.0f, 0.0f, 1.0f);
-	m_v3CameraUp = AXIS_Y;
+	m_v3CameraUp = vector3(0.0f, 1.0f, 0.0f);
+	m_v3TargetCameraUp = m_v3CameraPosition+m_v3CameraUp;
 	//Orientation matrix
 	m_m4Orientation = IDENTITY_M4;
 	//init the camera
@@ -34,14 +35,20 @@ void Application::InitVariables(void)
 }
 void Application::Update(void)
 {
+
 	//Update the system so it knows how much time has passed since the last call
 	m_pSystem->Update();
+
+
 
 	//Is the arcball active?
 	ArcBall();
 
 	//Is the first person camera active?
-	CameraRotation();
+	CameraRotation(0.3f);
+
+	
+	
 
 	//Add objects to the Manager
 	for (int j = -50; j < 50; j += 2)
@@ -59,12 +66,12 @@ void Application::Display(void)
 
 	
 
-	//setting camera target here
-	m_v3CameraTarget = m_v3CameraPosition+m_v3CameraForward;
-
 	
-	m_pCamera->SetPositionTargetAndUp(m_v3CameraTarget, m_v3CameraPosition, m_v3CameraUp);
 
+	//setting target and position here.
+	m_pCamera->SetPosition(m_v3CameraPosition);
+	m_pCamera->SetTarget(m_v3CameraTarget);
+	m_pCamera->SetUp(AXIS_Y);
 	
 
 	//Clear the screen

@@ -351,52 +351,56 @@ void Application::CameraRotation(float a_fSpeed)
 	{
 		fDeltaMouse = static_cast<float>(CenterX - MouseX);
 		fAngleY += fDeltaMouse * a_fSpeed;
-		//rotating in this case, not on frames we aren't moving the mouse with the right button held down
-		m_m4Orientation *= glm::toMat4(glm::angleAxis(fAngleY, vector3(0.0f, 1.0f, 0.0f)));
-		//forward vector
-		vector4 temp = m_m4Orientation* vector4(m_v3CameraForward, 1.0f);
-		m_v3CameraForward = vector3(temp);
-		//target Vector
-		temp = m_m4Orientation*vector4(m_v3CameraUp, 1.0f);
-		m_v3CameraUp = vector3(temp);
+		//Getting rotation around the y axis
+		quaternion rotation = glm::angleAxis(fAngleY, AXIS_Y);
+		//getting back to the camera
+		m_v3CameraTarget -= m_v3CameraForward;
+		//rotating the forward vector
+		m_v3CameraForward = glm::rotate(rotation, m_v3CameraForward);
+		//Adding the forward vector back
+		m_v3CameraTarget += m_v3CameraForward;
+	
 	}
 	else if (MouseX > CenterX)
 	{
 		fDeltaMouse = static_cast<float>(MouseX - CenterX);
 		fAngleY -= fDeltaMouse * a_fSpeed;
-		m_m4Orientation *= glm::toMat4(glm::angleAxis(fAngleY, vector3(0.0f,1.0f,0.0f)));
-		//forward vector
-		vector4 temp = m_m4Orientation* vector4(m_v3CameraForward, 1.0f);
-		m_v3CameraForward = vector3(temp);
-		//target Vector
-		temp = m_m4Orientation*vector4(m_v3CameraUp, 1.0f);
-		m_v3CameraUp = vector3(temp);
+		//getting a rotation around the y axis
+		quaternion rotation = glm::angleAxis(fAngleY, AXIS_Y);
+		//getting back to the camera
+		m_v3CameraTarget -= m_v3CameraForward;
+		//rotating the forward vector
+		m_v3CameraForward = glm::rotate(rotation, m_v3CameraForward);
+		//Adding the forward vector back
+		m_v3CameraTarget += m_v3CameraForward;
 	}
 
 	if (MouseY < CenterY)
 	{
 		fDeltaMouse = static_cast<float>(CenterY - MouseY);
 		fAngleX -= fDeltaMouse * a_fSpeed;
-		m_m4Orientation *= glm::toMat4(glm::angleAxis(fAngleX, vector3(1.0f,0.0f,0.0f)));
-		//forward vector
-		vector4 temp = m_m4Orientation* vector4(m_v3CameraForward, 1.0f);
-		m_v3CameraForward = vector3(temp);
-		//target Vector
-		temp = m_m4Orientation*vector4(m_v3CameraUp, 1.0f);
-		m_v3CameraUp = vector3(temp);
+		//Getting a rotation around the x axis
+		quaternion rotation = glm::angleAxis(fAngleX, AXIS_X);
+		//getting back to the camera
+		m_v3CameraTarget -= m_v3CameraForward;
+		//rotating the forward vector
+		m_v3CameraForward = glm::rotate(rotation, m_v3CameraForward);
+		//Adding the forward vector back
+		m_v3CameraTarget += m_v3CameraForward;
 		
 	}
 	else if (MouseY > CenterY)
 	{
 		fDeltaMouse = static_cast<float>(MouseY - CenterY);
 		fAngleX += fDeltaMouse * a_fSpeed;
-		m_m4Orientation *= glm::toMat4(glm::angleAxis(fAngleX, vector3(1.0f,0.0f,0.0f)));
-		//forward vector
-		vector4 temp = m_m4Orientation* vector4(m_v3CameraForward, 1.0f);
-		m_v3CameraForward = vector3(temp);
-		//target Vector
-		temp = m_m4Orientation*vector4(m_v3CameraUp, 1.0f);
-		m_v3CameraUp = vector3(temp);
+		//Getting a rotation around the x axis
+		quaternion rotation = glm::angleAxis(fAngleX, AXIS_X);
+		//getting back to the camera
+		m_v3CameraTarget -= m_v3CameraForward;
+		//rotating the forward vector
+		m_v3CameraForward = glm::rotate(rotation, m_v3CameraForward);
+		//Adding the forward vector back
+		m_v3CameraTarget += m_v3CameraForward;
 		
 	}
 	//Change the Yaw and the Pitch of the camera
@@ -429,46 +433,55 @@ void Application::ProcessJoystick(void)
 
 	//keyboard controls for  moving the camera and it's target
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-
-		m_v3CameraPosition.z += fSpeed;
-		//m_v3CameraTarget.z += fSpeed;
+		//using the forward to move foward, wow!
+		m_v3CameraPosition += m_v3CameraForward*fSpeed;
+		m_v3CameraTarget += m_v3CameraForward*fSpeed;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-	
-		m_v3CameraPosition.z -= fSpeed;
-		//m_v3CameraTarget.z -= fSpeed;
+		//using the forward to move backwards
+		m_v3CameraPosition -= m_v3CameraForward*fSpeed;
+		m_v3CameraTarget -= m_v3CameraForward*fSpeed;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
 	
-		m_v3CameraPosition.x += fSpeed;
-		//m_v3CameraTarget.x += fSpeed;
+		//rotating the forward 90 degrees then using it to move to the side
+		quaternion m_qTemp = glm::angleAxis(90.0f, AXIS_Y);
+		//locking the y here
+		vector3 m_v3Temp = vector3(glm::rotate(m_qTemp, m_v3CameraForward).x, 0.0f, glm::rotate(m_qTemp, m_v3CameraForward).z);
+
+		m_v3CameraPosition += m_v3Temp*fSpeed;
+		m_v3CameraTarget += m_v3Temp*fSpeed;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-		
-		m_v3CameraPosition.x -= fSpeed;
-		//m_v3CameraTarget.x -= fSpeed;
+		//rotating the forward 90 degrees then using it to move to the side
+		quaternion m_qTemp = glm::angleAxis(90.0f, AXIS_Y);
+		//can't move in the y direction so we lock the y
+		vector3 m_v3Temp = vector3(glm::rotate(m_qTemp, m_v3CameraForward).x, 0.0f, glm::rotate(m_qTemp, m_v3CameraForward).z);
+		m_v3CameraPosition -= m_v3Temp*fSpeed;
+		m_v3CameraTarget -= m_v3Temp*fSpeed;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
 	
-		m_v3CameraPosition.y -= fSpeed;
-		//m_v3CameraTarget.y -= fSpeed;
+		quaternion m_qTemp = glm::angleAxis(90.0f, AXIS_X);
+		//locking on the x
+		vector3 m_v3Temp = vector3(0.0f, glm::rotate(m_qTemp, m_v3CameraForward).y, glm::rotate(m_qTemp, m_v3CameraForward).z);
+		m_v3CameraPosition -= m_v3Temp*fSpeed;
+		m_v3CameraTarget -= m_v3Temp*fSpeed;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
 		
-		m_v3CameraPosition.y += fSpeed;
-		//m_v3CameraTarget.y += fSpeed;
+		quaternion m_qTemp = glm::angleAxis(90.0f, AXIS_X);
+		//locking on the x
+		vector3 m_v3Temp = vector3(0.0f, glm::rotate(m_qTemp, m_v3CameraForward).y, glm::rotate(m_qTemp, m_v3CameraForward).z);
+		m_v3CameraPosition += m_v3Temp*fSpeed;
+		m_v3CameraTarget += m_v3Temp*fSpeed;
 
 	}
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad6)) {
-
-		
-		//m_v3CameraTarget.y += fSpeed;
-
-	}
+	
 #pragma region Camera Position
 	float fForwardSpeed = m_pController[m_uActCont]->axis[SimplexAxis_Y] / 150.0f;
 	float fHorizontalSpeed = m_pController[m_uActCont]->axis[SimplexAxis_X] / 150.0f;

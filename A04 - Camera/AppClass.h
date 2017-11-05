@@ -23,6 +23,7 @@ private:
 	vector3 m_v3CameraPosition;
 	vector3 m_v3CameraTarget;
 	vector3 m_v3CameraForward;
+	vector3 m_v3TargetCameraUp;
 	vector3 m_v3CameraUp;
 	matrix4 m_m4Orientation;
 

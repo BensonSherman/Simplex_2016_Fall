@@ -138,7 +138,7 @@ void MyRigidBody::AddToRenderList(void)
 	if (!m_bVisible)
 		return;
 
-	//m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfWidth * 2.0f), C_WHITE);
+	m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(m_v3HalfWidth * 2.0f), C_WHITE);
 	m_pMeshMngr->AddWireSphereToRenderList(glm::translate(m_m4ToWorld, m_v3Center) * glm::scale(vector3(m_fRadius)), m_v3Color);
 }
 bool MyRigidBody::IsColliding(MyRigidBody* const other)

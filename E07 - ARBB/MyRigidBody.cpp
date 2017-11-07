@@ -85,8 +85,55 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	m_m4ToWorld = a_m4ModelMatrix;
 	
 	//your code goes here---------------------
-	m_v3MinG = m_v3MinL;
-	m_v3MaxG = m_v3MaxL;
+
+	//making a new bounding box
+	vector3 v3BoxPoints[8];
+
+	//getting the corners of that bounding box
+	v3BoxPoints[0] = m_v3MinL;
+	v3BoxPoints[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
+	v3BoxPoints[2] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MinL.z);
+	v3BoxPoints[3] = vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z);
+	v3BoxPoints[4] = vector3(m_v3MinL.x, m_v3MinL.y, m_v3MaxL.z);
+	v3BoxPoints[5] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z);
+	v3BoxPoints[6] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z);
+	v3BoxPoints[7] = m_v3MaxL;
+
+	//Translating the vector to the world
+	for (int i = 0; i < 8; i++) {
+		//modifying the corner by casting it to a vector 4 mutliplying it by the world matrix 
+		//and casting it back to a vector 3 
+		v3BoxPoints[i] = vector3(m_m4ToWorld*vector4(v3BoxPoints[i], 1.0f));
+	}
+
+	//setting max and min to the first corner
+	m_v3MaxG = v3BoxPoints[0];
+	m_v3MinG = v3BoxPoints[0];
+
+	//getting the new max and min for the new box
+	for (int i = 1; i < 8; ++i)
+	{
+		if (m_v3MaxG.x < v3BoxPoints[i].x) {
+			m_v3MaxG.x = v3BoxPoints[i].x;
+		}
+		else if (m_v3MinG.x > v3BoxPoints[i].x) {
+			m_v3MinG.x = v3BoxPoints[i].x;
+		}
+		if (m_v3MaxG.y < v3BoxPoints[i].y)
+		{
+			m_v3MaxG.y = v3BoxPoints[i].y;
+		}
+		else if (m_v3MinG.y > v3BoxPoints[i].y) {
+			m_v3MinG.y = v3BoxPoints[i].y;
+		}
+		if (m_v3MaxG.z < v3BoxPoints[i].z) {
+			m_v3MaxG.z = v3BoxPoints[i].z;
+		}
+		else if (m_v3MinG.z > v3BoxPoints[i].z) {
+			m_v3MinG.z = v3BoxPoints[i].z;
+		}
+	}
+	
 	//----------------------------------------
 
 	//we calculate the distance between min and max vectors

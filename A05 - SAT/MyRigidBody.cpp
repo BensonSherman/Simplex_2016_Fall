@@ -300,13 +300,13 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	vector3 aU[3];
 	aU[0] = vector3(m_m4ToWorld* vector4(1, 0, 0, 0));
 	aU[1] = vector3(m_m4ToWorld* vector4(0, 1, 0, 0));
-	aU[2] = vector3(m_m4ToWorld* vector4(1, 0, 1, 0));
+	aU[2] = vector3(m_m4ToWorld* vector4(0, 0, 1, 0));
 
 	//used for computer the rotation vector
 	vector3 bU[3];
 	bU[0] = vector3(a_pOther->m_m4ToWorld* vector4(1, 0, 0, 0));
 	bU[1] = vector3(a_pOther->m_m4ToWorld* vector4(0, 1, 0, 0));
-	bU[2] = vector3(a_pOther->m_m4ToWorld* vector4(1, 0, 1, 0));
+	bU[2] = vector3(a_pOther->m_m4ToWorld* vector4(0, 0, 1, 0));
 
 	float ra, rb;
 	matrix3 r, absR;

@@ -86,7 +86,7 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	m_m4ToWorld = a_m4ModelMatrix;
 
 	//Calculate the 8 corners of the cube
-	vector3 v3Corner[8];
+
 	//Back square
 	v3Corner[0] = m_v3MinL;
 	v3Corner[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
@@ -276,17 +276,158 @@ void MyRigidBody::AddToRenderList(void)
 
 uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 {
-	/*
-	Your code goes here instead of this comment;
+#pragma region aChecks
+	//Getting the x axis of a's rigid body
+	vector3 axis1 = vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG;
 
-	For this method, if there is an axis that separates the two objects
-	then the return will be different than 0; 1 for any separating axis
-	is ok if you are not going for the extra credit, if you could not
-	find a separating axis you need to return 0, there is an enum in
-	Simplex that might help you [eSATResults] feel free to use it.
-	(eSATResults::SAT_NONE has a value of 0)
-	*/
 
+
+	//if the max of the other is less than the min of this then it's out of our projection
+	if (m_v3MinG.x > glm::proj(a_pOther->m_v3MaxG, axis1).x) {
+		std::cout << "This happened ax 1 \n";
+		
+		return eSATResults::SAT_AX;
+
+		
+	}
+	//if the min of the other is more than the max of this then it's out of our projection
+	else if(m_v3MaxG.x<glm::proj(a_pOther->m_v3MinG, axis1).x)
+	{
+		std::cout << "This happened ax 2 \n";
+		return eSATResults::SAT_AX;
+		
+	}
+	
+	//getting the y axis of A's rigid body.
+	axis1 = vector3(m_v3MinG.x, m_v3MaxG.y, m_v3MinG.z) - m_v3MinG;
+
+	//if the max of the other is less than the min of this then it's out of our projection
+	if (m_v3MinG.y > glm::proj(a_pOther->m_v3MaxG, axis1).y) {
+		std::cout << "This happened ay 1 \n";
+		return eSATResults::SAT_AY;
+		
+	}
+	//if the min of the other is more than the max of this then it's out of our projection
+	else if (m_v3MaxG.y<glm::proj(a_pOther->m_v3MinG, axis1).y)
+	{
+		std::cout << "This happened ay 2 \n";
+		return eSATResults::SAT_AY;
+		
+	}
+	//getting the z axis of A's rigid body.
+	axis1 = vector3(m_v3MinG.x, m_v3MinG.y, m_v3MaxG.z) - m_v3MinG;
+
+	//if the max of the other is less than the min of this then it's out of our projection
+	if (m_v3MinG.z > glm::proj(a_pOther->m_v3MaxG, axis1).z) {
+		std::cout << "This happened az 1 \n";
+		return eSATResults::SAT_AZ;
+
+	}
+	//if the min of the other is more than the max of this then it's out of our projection
+	else if (m_v3MaxG.z<glm::proj(a_pOther->m_v3MinG, axis1).z)
+	{
+		std::cout << "This happened az 2 \n";
+		return eSATResults::SAT_AZ;
+
+	}
+#pragma endregion aChecks
+
+#pragma region bChecks
+	axis1 = vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG;
+
+
+
+	//if the max of the other is less than the min of this then it's out of our projection
+	if (a_pOther->m_v3MinG.x > glm::proj(m_v3MaxG, axis1).x) {
+		std::cout << "This happened bx 1 \n";
+
+		return eSATResults::SAT_BX;
+
+
+	}
+	//if the min of the other is more than the max of this then it's out of our projection
+	else if (a_pOther->m_v3MaxG.x<glm::proj(m_v3MinG, axis1).x)
+	{
+		std::cout << "This happened bx 2 \n";
+		return eSATResults::SAT_BX;
+
+	}
+
+	//getting the y axis of A's rigid body.
+	axis1 = vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG;
+
+	//if the max of the other is less than the min of this then it's out of our projection
+	if (a_pOther->m_v3MinG.y > glm::proj(m_v3MaxG, axis1).y) {
+		std::cout << "This happened by 1 \n";
+		return eSATResults::SAT_BY;
+
+	}
+	//if the min of the other is more than the max of this then it's out of our projection
+	else if (a_pOther->m_v3MaxG.y<glm::proj(m_v3MinG, axis1).y)
+	{
+		std::cout << "This happened by 2 \n";
+		return eSATResults::SAT_BY;
+
+	}
+	//getting the z axis of A's rigid body.
+	axis1 = vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG;
+
+	//if the max of the other is less than the min of this then it's out of our projection
+	if (a_pOther->m_v3MinG.z > glm::proj(m_v3MaxG, axis1).z) {
+		std::cout << "This happened bz 1 \n";
+		return eSATResults::SAT_BZ;
+
+	}
+	//if the min of the other is more than the max of this then it's out of our projection
+	else if (a_pOther->m_v3MaxG.z<glm::proj(m_v3MinG, axis1).z)
+	{
+		std::cout << "This happened bz 2 \n";
+		return eSATResults::SAT_BZ;
+
+	}
+#pragma endregion bChecks
+
+#pragma region axCrossChecks
+	//Checking ax Cross bx
+	axis1 = vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG;
+	vector3 axis2 = vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG;
+	vector3 axisCrossed = glm::cross(axis1, axis2);
+	//if a's max, projected onto our new axis is less than b's minimum than there's a gap
+	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).x) {
+		std::cout << "This happened axcrossbx 1 \n";
+		return eSATResults::SAT_AXxBX;
+	}
+	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).x) {
+		std::cout << "This happened axcrossbx 2 \n";
+		return eSATResults::SAT_AXxBX;
+	}
+
+	//checking ax cross by
+	axis2 = vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG;
+	axisCrossed = glm::cross(axis1, axis2);
+	//if a's max, projected onto our new axis is less than b's minimum than there's a gap
+	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).y) {
+		std::cout << "This happened axcrossby 1 \n";
+		return eSATResults::SAT_AXxBY;
+	}
+	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).y) {
+		std::cout << "This happened axcrossby 2 \n";
+		return eSATResults::SAT_AXxBY;
+	}
+
+	axis2 = vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG;
+	axisCrossed = glm::cross(axis1, axis2);
+	//if a's max, projected onto our new axis is less than b's minimum than there's a gap
+	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).z) {
+		std::cout << "This happened axcrossbz 1 \n";
+		return eSATResults::SAT_AXxBZ;
+	}
+	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).z) {
+		std::cout << "This happened axcrossbz 2 \n";
+		return eSATResults::SAT_AXxBZ;
+	}
+	
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
+#pragma endregion axCrossChecks
 }

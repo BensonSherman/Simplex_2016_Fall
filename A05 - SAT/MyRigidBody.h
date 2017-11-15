@@ -249,6 +249,8 @@ private:
 	OUTPUT: 0 for colliding, other = first axis that succeeds test
 	*/
 	uint SAT(MyRigidBody* const a_pOther);
+	void MinMaxTest(vector3 * a_v3Corners, vector3 a_v3Axis, float & a_fMin, float & a_fMax);
+
 };//class
 
 } //namespace Simplex

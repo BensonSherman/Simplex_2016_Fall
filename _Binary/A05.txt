@@ -1,0 +1,7 @@
+a.u[0] = vec3(a.toWorld * vec4(1, 0, 0, 0))
+a.u[1] = vec3(a.toWorld * vec4(0, 1, 0, 0))
+a.u[2] = vec3(a.toWorld * vec4(0, 0, 1, 0))
+
+b.u[0] = vec3(b.toWorld * vec4(1, 0, 0, 0))
+b.u[1] = vec3(b.toWorld * vec4(0, 1, 0, 0))
+b.u[2] = vec3(b.toWorld * vec4(0, 0, 1, 0))

@@ -276,158 +276,121 @@ void MyRigidBody::AddToRenderList(void)
 
 uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 {
-#pragma region aChecks
-	//Getting the x axis of a's rigid body
-	vector3 axis1 = vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG;
+	std::vector<vector3> axes = std::vector<vector3>();
 
+	//Getting the axes of a's rigid body
+	axes.push_back(glm::normalize(vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG));
+	axes.push_back(glm::normalize(vector3(m_v3MinG.x, m_v3MaxG.y, m_v3MinG.z) - m_v3MinG));
+	axes.push_back(glm::normalize(vector3(m_v3MinG.x, m_v3MinG.y, m_v3MaxG.z) - m_v3MinG));
 
+	//getting the axes of b's Rigid body
+	axes.push_back(glm::normalize(vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG));
+	axes.push_back(glm::normalize(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG));
+	axes.push_back(glm::normalize(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG));
+	//cross axes
+	//i is a
+	/*for (int i = 0; i < 3; i++) {
+		//c is b
+		for (int c = 0; c < 3; c++) {
+			axes.push_back(glm::cross(axes[i], axes[c + 3]));
+		}
+	}*/
 
-	//if the max of the other is less than the min of this then it's out of our projection
-	if (m_v3MinG.x > glm::proj(a_pOther->m_v3MaxG, axis1).x) {
-		std::cout << "This happened ax 1 \n";
-		
-		return eSATResults::SAT_AX;
+	//used for computing the rotation vector
+	vector3 aU[3];
+	aU[0] = vector3(m_m4ToWorld* vector4(1, 0, 0, 0));
+	aU[1] = vector3(m_m4ToWorld* vector4(0, 1, 0, 0));
+	aU[2] = vector3(m_m4ToWorld* vector4(1, 0, 1, 0));
 
-		
-	}
-	//if the min of the other is more than the max of this then it's out of our projection
-	else if(m_v3MaxG.x<glm::proj(a_pOther->m_v3MinG, axis1).x)
-	{
-		std::cout << "This happened ax 2 \n";
-		return eSATResults::SAT_AX;
-		
-	}
+	//used for computer the rotation vector
+	vector3 bU[3];
+	bU[0] = vector3(a_pOther->m_m4ToWorld* vector4(1, 0, 0, 0));
+	bU[1] = vector3(a_pOther->m_m4ToWorld* vector4(0, 1, 0, 0));
+	bU[2] = vector3(a_pOther->m_m4ToWorld* vector4(1, 0, 1, 0));
+
+	float ra, rb;
+	matrix3 r, absR;
+
+	float ra, rb;
+	matrix3 r, absR;
+
+	// Compute rotation matrix expressing b in a's coordinate frame
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			r[i][j] = glm::dot(aU[i], bU[j]);
+
+	// Compute translation vector t
+	vector3 t = a_pOther->m_v3Center - m_v3Center;
+	// Bring translation into a's coordinate frame
+	t = vector3(glm::dot(t, aU[0]), glm::dot(t, aU[2]), glm::dot(t, aU[2]));
+
+	// counteract arithmetic errors when two edges are parallel and
 	
-	//getting the y axis of A's rigid body.
-	axis1 = vector3(m_v3MinG.x, m_v3MaxG.y, m_v3MinG.z) - m_v3MinG;
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			absR[i][j] = glm::abs(r[i][j]) +FLT_EPSILON;
 
-	//if the max of the other is less than the min of this then it's out of our projection
-	if (m_v3MinG.y > glm::proj(a_pOther->m_v3MaxG, axis1).y) {
-		std::cout << "This happened ay 1 \n";
-		return eSATResults::SAT_AY;
-		
-	}
-	//if the min of the other is more than the max of this then it's out of our projection
-	else if (m_v3MaxG.y<glm::proj(a_pOther->m_v3MinG, axis1).y)
-	{
-		std::cout << "This happened ay 2 \n";
-		return eSATResults::SAT_AY;
-		
-	}
-	//getting the z axis of A's rigid body.
-	axis1 = vector3(m_v3MinG.x, m_v3MinG.y, m_v3MaxG.z) - m_v3MinG;
-
-	//if the max of the other is less than the min of this then it's out of our projection
-	if (m_v3MinG.z > glm::proj(a_pOther->m_v3MaxG, axis1).z) {
-		std::cout << "This happened az 1 \n";
-		return eSATResults::SAT_AZ;
-
-	}
-	//if the min of the other is more than the max of this then it's out of our projection
-	else if (m_v3MaxG.z<glm::proj(a_pOther->m_v3MinG, axis1).z)
-	{
-		std::cout << "This happened az 2 \n";
-		return eSATResults::SAT_AZ;
-
-	}
-#pragma endregion aChecks
-
-#pragma region bChecks
-	axis1 = vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG;
-
-
-
-	//if the max of the other is less than the min of this then it's out of our projection
-	if (a_pOther->m_v3MinG.x > glm::proj(m_v3MaxG, axis1).x) {
-		std::cout << "This happened bx 1 \n";
-
-		return eSATResults::SAT_BX;
-
-
-	}
-	//if the min of the other is more than the max of this then it's out of our projection
-	else if (a_pOther->m_v3MaxG.x<glm::proj(m_v3MinG, axis1).x)
-	{
-		std::cout << "This happened bx 2 \n";
-		return eSATResults::SAT_BX;
-
+	// Test axes L = A0, L = A1, L = A2
+	for (int i = 0; i < 3; i++) {
+		ra = a.e[i];
+		rb = b.e[0] * absR[i][0] + b.e[1] * absR[i][1] + b.e[2] * absR[i][2];
+		if (glm::abs(t[i]) > ra + rb) return 0;
 	}
 
-	//getting the y axis of A's rigid body.
-	axis1 = vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG;
-
-	//if the max of the other is less than the min of this then it's out of our projection
-	if (a_pOther->m_v3MinG.y > glm::proj(m_v3MaxG, axis1).y) {
-		std::cout << "This happened by 1 \n";
-		return eSATResults::SAT_BY;
-
-	}
-	//if the min of the other is more than the max of this then it's out of our projection
-	else if (a_pOther->m_v3MaxG.y<glm::proj(m_v3MinG, axis1).y)
-	{
-		std::cout << "This happened by 2 \n";
-		return eSATResults::SAT_BY;
-
-	}
-	//getting the z axis of A's rigid body.
-	axis1 = vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG;
-
-	//if the max of the other is less than the min of this then it's out of our projection
-	if (a_pOther->m_v3MinG.z > glm::proj(m_v3MaxG, axis1).z) {
-		std::cout << "This happened bz 1 \n";
-		return eSATResults::SAT_BZ;
-
-	}
-	//if the min of the other is more than the max of this then it's out of our projection
-	else if (a_pOther->m_v3MaxG.z<glm::proj(m_v3MinG, axis1).z)
-	{
-		std::cout << "This happened bz 2 \n";
-		return eSATResults::SAT_BZ;
-
-	}
-#pragma endregion bChecks
-
-#pragma region axCrossChecks
-	//Checking ax Cross bx
-	axis1 = vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG;
-	vector3 axis2 = vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG;
-	vector3 axisCrossed = glm::cross(axis1, axis2);
-	//if a's max, projected onto our new axis is less than b's minimum than there's a gap
-	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).x) {
-		std::cout << "This happened axcrossbx 1 \n";
-		return eSATResults::SAT_AXxBX;
-	}
-	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).x) {
-		std::cout << "This happened axcrossbx 2 \n";
-		return eSATResults::SAT_AXxBX;
+	// Test axes L = B0, L = B1, L = B2
+	for (int i = 0; i < 3; i++) {
+		ra = a.e[0] * absR[0][i] + a.e[1] * absR[1][i] + a.e[2] * absR[2][i];
+		rb = b.e[i];
+		if (glm::abs(t[0] * r[0][i] + t[1] * r[1][i] + t[2] * r[2][i]) > ra + rb) return 0;
 	}
 
-	//checking ax cross by
-	axis2 = vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG;
-	axisCrossed = glm::cross(axis1, axis2);
-	//if a's max, projected onto our new axis is less than b's minimum than there's a gap
-	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).y) {
-		std::cout << "This happened axcrossby 1 \n";
-		return eSATResults::SAT_AXxBY;
-	}
-	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).y) {
-		std::cout << "This happened axcrossby 2 \n";
-		return eSATResults::SAT_AXxBY;
-	}
+	// Test axis L = A0 x B0
+	ra = a.e[1] * absR[2][0] + a.e[2] * absR[1][0];
+	rb = b.e[1] * absR[0][2] + b.e[2] * absR[0][1];
+	if (glm::abs(t[2] * r[1][0] - t[1] * r[2][0]) > ra + rb) return 0;
 
-	axis2 = vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG;
-	axisCrossed = glm::cross(axis1, axis2);
-	//if a's max, projected onto our new axis is less than b's minimum than there's a gap
-	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).z) {
-		std::cout << "This happened axcrossbz 1 \n";
-		return eSATResults::SAT_AXxBZ;
-	}
-	if (glm::proj(m_v3MaxG, axisCrossed).x < glm::proj(a_pOther->m_v3MinG, axisCrossed).z) {
-		std::cout << "This happened axcrossbz 2 \n";
-		return eSATResults::SAT_AXxBZ;
-	}
-	
-	//there is no axis test that separates this two objects
-	return eSATResults::SAT_NONE;
-#pragma endregion axCrossChecks
+	// Test axis L = A0 x B1
+	ra = a.e[1] * absR[2][1] + a.e[2] * absR[1][1];
+	rb = b.e[0] * absR[0][2] + b.e[2] * absR[0][0];
+	if (glm::abs(t[2] * r[1][1] - t[1] * r[2][1]) > ra + rb) return 0;
+
+	// Test axis L = A0 x B2
+	ra = a.e[1] * absR[2][2] + a.e[2] * absR[1][2];
+	rb = b.e[0] * absR[0][1] + b.e[1] * absR[0][0];
+	if (glm::abs(t[2] * r[1][2] - t[1] * r[2][2]) > ra + rb) return 0;
+
+	// Test axis L = A1 x B0
+	ra = a.e[0] * absR[2][0] + a.e[2] * absR[0][0];
+	rb = b.e[1] * absR[1][2] + b.e[2] * absR[1][1];
+
+	if (glm::abs(t[0] * r[2][0] - t[2] * r[0][0]) > ra + rb) return 0;
+
+	// Test axis L = A1 x B1
+	ra = a.e[0] * absR[2][1] + a.e[2] * absR[0][1];
+	rb = b.e[0] * absR[1][2] + b.e[2] * absR[1][0];
+	if (glm::abs(t[0] * r[2][1] - t[2] * r[0][1]) > ra + rb) return 0;
+
+	// Test axis L = A1 x B2
+	ra = a.e[0] * absR[2][2] + a.e[2] * absR[0][2];
+	rb = b.e[0] * absR[1][1] + b.e[1] * absR[1][0];
+	if (glm::abs(t[0] * r[2][2] - t[2] * r[0][2]) > ra + rb) return 0;
+
+	// Test axis L = A2 x B0
+	ra = a.e[0] * absR[1][0] + a.e[1] * absR[0][0];
+	rb = b.e[1] * absR[2][2] + b.e[2] * absR[2][1];
+	if (glm::abs(t[1] * r[0][0] - t[0] * r[1][0]) > ra + rb) return 0;
+
+	// Test axis L = A2 x B1
+	ra = a.e[0] * absR[1][1] + a.e[1] * absR[0][1];
+	rb = b.e[0] * absR[2][2] + b.e[2] * absR[2][0];
+	if (glm::abs(t[1] * r[0][1] - t[0] * r[1][1]) > ra + rb) return 0;
+
+	// Test axis L = A2 x B2
+	ra = a.e[0] * absR[1][2] + a.e[1] * absR[0][2];
+	rb = b.e[0] * absR[2][1] + b.e[1] * absR[2][0];
+	if (glm::abs(t[1] * r[0][2] - t[0] * r[1][2]) > ra + rb) return 0;
+
+	// Since no separating axis is found, the OBBs must be intersecting
+	return 1;
 }
+

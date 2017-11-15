@@ -279,14 +279,14 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	std::vector<vector3> axes = std::vector<vector3>();
 
 	//Getting the axes of a's rigid body
-	axes.push_back(glm::normalize(vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG));
-	axes.push_back(glm::normalize(vector3(m_v3MinG.x, m_v3MaxG.y, m_v3MinG.z) - m_v3MinG));
-	axes.push_back(glm::normalize(vector3(m_v3MinG.x, m_v3MinG.y, m_v3MaxG.z) - m_v3MinG));
+	//axes.push_back(glm::normalize(vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG));
+	//axes.push_back(glm::normalize(vector3(m_v3MinG.x, m_v3MaxG.y, m_v3MinG.z) - m_v3MinG));
+	//axes.push_back(glm::normalize(vector3(m_v3MinG.x, m_v3MinG.y, m_v3MaxG.z) - m_v3MinG));
 
 	//getting the axes of b's Rigid body
-	axes.push_back(glm::normalize(vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG));
-	axes.push_back(glm::normalize(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG));
-	axes.push_back(glm::normalize(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG));
+	//axes.push_back(glm::normalize(vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG));
+	//axes.push_back(glm::normalize(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG));
+	//axes.push_back(glm::normalize(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG));
 	//cross axes
 	//i is a
 	/*for (int i = 0; i < 3; i++) {
@@ -311,18 +311,15 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	float ra, rb;
 	matrix3 r, absR;
 
-	float ra, rb;
-	matrix3 r, absR;
-
 	// Compute rotation matrix expressing b in a's coordinate frame
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
 			r[i][j] = glm::dot(aU[i], bU[j]);
 
 	// Compute translation vector t
-	vector3 t = a_pOther->m_v3Center - m_v3Center;
+	vector3 t = a_pOther->GetCenterGlobal() - GetCenterGlobal();
 	// Bring translation into a's coordinate frame
-	t = vector3(glm::dot(t, aU[0]), glm::dot(t, aU[2]), glm::dot(t, aU[2]));
+	t = vector3(glm::dot(t, aU[0]), glm::dot(t, aU[1]), glm::dot(t, aU[2]));
 
 	// counteract arithmetic errors when two edges are parallel and
 	
@@ -332,65 +329,65 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 
 	// Test axes L = A0, L = A1, L = A2
 	for (int i = 0; i < 3; i++) {
-		ra = a.e[i];
-		rb = b.e[0] * absR[i][0] + b.e[1] * absR[i][1] + b.e[2] * absR[i][2];
-		if (glm::abs(t[i]) > ra + rb) return 0;
+		ra = m_v3HalfWidth[i];
+		rb = a_pOther->m_v3HalfWidth[0] * absR[i][0] + a_pOther->m_v3HalfWidth[1] * absR[i][1] + a_pOther->m_v3HalfWidth[2] * absR[i][2];
+		if (glm::abs(t[i]) > ra + rb) return 1;
 	}
 
 	// Test axes L = B0, L = B1, L = B2
 	for (int i = 0; i < 3; i++) {
-		ra = a.e[0] * absR[0][i] + a.e[1] * absR[1][i] + a.e[2] * absR[2][i];
-		rb = b.e[i];
-		if (glm::abs(t[0] * r[0][i] + t[1] * r[1][i] + t[2] * r[2][i]) > ra + rb) return 0;
+		ra = m_v3HalfWidth[0] * absR[0][i] + m_v3HalfWidth[1] * absR[1][i] + m_v3HalfWidth[2] * absR[2][i];
+		rb = a_pOther->m_v3HalfWidth[i];
+		if (glm::abs(t[0] * r[0][i] + t[1] * r[1][i] + t[2] * r[2][i]) > ra + rb) return 1;
 	}
 
 	// Test axis L = A0 x B0
-	ra = a.e[1] * absR[2][0] + a.e[2] * absR[1][0];
-	rb = b.e[1] * absR[0][2] + b.e[2] * absR[0][1];
-	if (glm::abs(t[2] * r[1][0] - t[1] * r[2][0]) > ra + rb) return 0;
+	ra = m_v3HalfWidth[1] * absR[2][0] + m_v3HalfWidth[2] * absR[1][0];
+	rb = a_pOther->m_v3HalfWidth[1] * absR[0][2] + a_pOther->m_v3HalfWidth[2] * absR[0][1];
+	if (glm::abs(t[2] * r[1][0] - t[1] * r[2][0]) > ra + rb) return 1;
 
 	// Test axis L = A0 x B1
-	ra = a.e[1] * absR[2][1] + a.e[2] * absR[1][1];
-	rb = b.e[0] * absR[0][2] + b.e[2] * absR[0][0];
-	if (glm::abs(t[2] * r[1][1] - t[1] * r[2][1]) > ra + rb) return 0;
+	ra = m_v3HalfWidth[1] * absR[2][1] + m_v3HalfWidth[2] * absR[1][1];
+	rb = a_pOther->m_v3HalfWidth[0] * absR[0][2] + a_pOther->m_v3HalfWidth[2] * absR[0][0];
+	if (glm::abs(t[2] * r[1][1] - t[1] * r[2][1]) > ra + rb) return 1;
 
 	// Test axis L = A0 x B2
-	ra = a.e[1] * absR[2][2] + a.e[2] * absR[1][2];
-	rb = b.e[0] * absR[0][1] + b.e[1] * absR[0][0];
-	if (glm::abs(t[2] * r[1][2] - t[1] * r[2][2]) > ra + rb) return 0;
+	ra = m_v3HalfWidth[1] * absR[2][2] + m_v3HalfWidth[2] * absR[1][2];
+	rb = a_pOther->m_v3HalfWidth[0] * absR[0][1] + a_pOther->m_v3HalfWidth[1] * absR[0][0];
+	if (glm::abs(t[2] * r[1][2] - t[1] * r[2][2]) > ra + rb) return 1;
 
 	// Test axis L = A1 x B0
-	ra = a.e[0] * absR[2][0] + a.e[2] * absR[0][0];
-	rb = b.e[1] * absR[1][2] + b.e[2] * absR[1][1];
+	ra = m_v3HalfWidth[0] * absR[2][0] + m_v3HalfWidth[2] * absR[0][0];
+	rb = a_pOther->m_v3HalfWidth[1] * absR[1][2] + a_pOther->m_v3HalfWidth[2] * absR[1][1];
 
-	if (glm::abs(t[0] * r[2][0] - t[2] * r[0][0]) > ra + rb) return 0;
+	if (glm::abs(t[0] * r[2][0] - t[2] * r[0][0]) > ra + rb) return 1;
 
 	// Test axis L = A1 x B1
-	ra = a.e[0] * absR[2][1] + a.e[2] * absR[0][1];
-	rb = b.e[0] * absR[1][2] + b.e[2] * absR[1][0];
-	if (glm::abs(t[0] * r[2][1] - t[2] * r[0][1]) > ra + rb) return 0;
+	ra = m_v3HalfWidth[0] * absR[2][1] + m_v3HalfWidth[2] * absR[0][1];
+	rb = a_pOther->m_v3HalfWidth[0] * absR[1][2] + a_pOther->m_v3HalfWidth[2] * absR[1][0];
+	if (glm::abs(t[0] * r[2][1] - t[2] * r[0][1]) > ra + rb) return 1;
 
 	// Test axis L = A1 x B2
-	ra = a.e[0] * absR[2][2] + a.e[2] * absR[0][2];
-	rb = b.e[0] * absR[1][1] + b.e[1] * absR[1][0];
-	if (glm::abs(t[0] * r[2][2] - t[2] * r[0][2]) > ra + rb) return 0;
+	ra = m_v3HalfWidth[0] * absR[2][2] + m_v3HalfWidth[2] * absR[0][2];
+	rb = a_pOther->m_v3HalfWidth[0] * absR[1][1] + a_pOther->m_v3HalfWidth[1] * absR[1][0];
+	if (glm::abs(t[0] * r[2][2] - t[2] * r[0][2]) > ra + rb) return 1;
 
 	// Test axis L = A2 x B0
-	ra = a.e[0] * absR[1][0] + a.e[1] * absR[0][0];
-	rb = b.e[1] * absR[2][2] + b.e[2] * absR[2][1];
-	if (glm::abs(t[1] * r[0][0] - t[0] * r[1][0]) > ra + rb) return 0;
+	ra = m_v3HalfWidth[0] * absR[1][0] + m_v3HalfWidth[1] * absR[0][0];
+	rb = a_pOther->m_v3HalfWidth[1] * absR[2][2] + a_pOther->m_v3HalfWidth[2] * absR[2][1];
+	if (glm::abs(t[1] * r[0][0] - t[0] * r[1][0]) > ra + rb) return 1;
 
 	// Test axis L = A2 x B1
-	ra = a.e[0] * absR[1][1] + a.e[1] * absR[0][1];
-	rb = b.e[0] * absR[2][2] + b.e[2] * absR[2][0];
-	if (glm::abs(t[1] * r[0][1] - t[0] * r[1][1]) > ra + rb) return 0;
+	ra = m_v3HalfWidth[0] * absR[1][1] + m_v3HalfWidth[1] * absR[0][1];
+	rb = a_pOther->m_v3HalfWidth[0] * absR[2][2] + a_pOther->m_v3HalfWidth[2] * absR[2][0];
+	if (glm::abs(t[1] * r[0][1] - t[0] * r[1][1]) > ra + rb) return 1;
 
 	// Test axis L = A2 x B2
-	ra = a.e[0] * absR[1][2] + a.e[1] * absR[0][2];
-	rb = b.e[0] * absR[2][1] + b.e[1] * absR[2][0];
-	if (glm::abs(t[1] * r[0][2] - t[0] * r[1][2]) > ra + rb) return 0;
+	ra = m_v3HalfWidth[0] * absR[1][2] + m_v3HalfWidth[1] * absR[0][2];
+	rb = a_pOther->m_v3HalfWidth[0] * absR[2][1] + a_pOther->m_v3HalfWidth[1] * absR[2][0];
+	if (glm::abs(t[1] * r[0][2] - t[0] * r[1][2]) > ra + rb) return 1;
 
 	// Since no separating axis is found, the OBBs must be intersecting
-	return 1;
+	return eSATResults::SAT_NONE;
 }
 

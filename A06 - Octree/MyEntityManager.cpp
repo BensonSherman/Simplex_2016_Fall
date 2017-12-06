@@ -2,6 +2,10 @@
 using namespace Simplex;
 //  MyEntityManager
 Simplex::MyEntityManager* Simplex::MyEntityManager::m_pInstance = nullptr;
+static uint m_uOctantCount; //will store the number of octants instantiated
+static uint m_uMaxLevel;//will store the maximum level an octant can go to
+static uint m_uIdealEntityCount; //will tell how many ideal Entities this object will contain
+
 void Simplex::MyEntityManager::Init(void)
 {
 	m_uEntityCount = 0;

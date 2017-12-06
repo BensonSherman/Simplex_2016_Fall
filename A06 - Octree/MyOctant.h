@@ -2,30 +2,30 @@
 #ifndef __MYOCTANT_H_
 #define __MYOCTANT_H_
 
-#include "MyEntityManager.h"
+#include "Simplex\Physics\EntityManager.h"
 
 
 
-
+namespace Simplex {
 	//System Class
 	class MyOctant
 	{
-		static Simplex::uint m_uOctantCount; //will store the number of octants instantiated
-		static Simplex::uint m_uMaxLevel;//will store the maximum level an octant can go to
-		static Simplex::uint m_uIdealEntityCount; //will tell how many ideal Entities this object will contain
+		static uint m_uOctantCount; //will store the number of octants instantiated
+		static uint m_uMaxLevel;//will store the maximum level an octant can go to
+		static uint m_uIdealEntityCount; //will tell how many ideal Entities this object will contain
 
-		Simplex::uint m_uID = 0; //Will store the current ID for this octant
-		Simplex::uint m_uLevel = 0; //Will store the current level of the octant
-		Simplex::uint m_uChildren = 0;// Number of children on the octant (either 0 or 8)
+		uint m_uID = 0; //Will store the current ID for this octant
+		uint m_uLevel = 0; //Will store the current level of the octant
+		uint m_uChildren = 0;// Number of children on the octant (either 0 or 8)
 
 		float m_fSize = 0.0f; //Size of the octant
 
-		Simplex::MeshManager* m_pMeshMngr = nullptr;//Mesh Manager singleton
-		Simplex::MyEntityManager* m_pEntityMngr = nullptr; //Entity Manager Singleton
+		MeshManager* m_pMeshMngr = nullptr;//Mesh Manager singleton
+		EntityManager* m_pEntityMngr = nullptr; //Entity Manager Singleton
 
-		Simplex::vector3 m_v3Center = Simplex::vector3(0.0f); //Will store the center point of the octant
-		Simplex::vector3 m_v3Min = Simplex::vector3(0.0f); //Will store the minimum vector of the octant
-		Simplex::vector3 m_v3Max = Simplex::vector3(0.0f); //Will store the maximum vector of the octant
+		vector3 m_v3Center = vector3(0.0f); //Will store the center point of the octant
+		vector3 m_v3Min = vector3(0.0f); //Will store the minimum vector of the octant
+		vector3 m_v3Max = vector3(0.0f); //Will store the maximum vector of the octant
 
 		MyOctant* m_pParent = nullptr;// Will store the parent of current octant
 		MyOctant* m_pChild[8];//Will store the children of the current octant
@@ -117,21 +117,21 @@
 		- vector3 a_v3Color = REYELLOW -> Color of the volume to display.
 		OUTPUT: ---
 		*/
-		void Display(Simplex::uint a_nIndex, Simplex::vector3 a_v3Color = Simplex::C_YELLOW);
+		void Display(uint a_nIndex, vector3 a_v3Color = C_YELLOW);
 		/*
 		USAGE: Displays the MyOctant volume in the color specified
 		ARGUMENTS:
 		- vector3 a_v3Color = REYELLOW -> Color of the volume to display.
 		OUTPUT: ---
 		*/
-		void Display(Simplex::vector3 a_v3Color = Simplex::C_YELLOW);
+		void Display(vector3 a_v3Color = C_YELLOW);
 		/*
 		USAGE: Displays the non empty leafs in the octree
 		ARGUMENTS:
 		- vector3 a_v3Color = REYELLOW -> Color of the volume to display.
 		OUTPUT: ---
 		*/
-		void DisplayLeafs(Simplex::vector3 a_v3Color = Simplex::C_YELLOW);
+		void DisplayLeafs(vector3 a_v3Color = C_YELLOW);
 		/*
 		USAGE: Clears the Entity list for each node
 		ARGUMENTS: ---
@@ -219,7 +219,7 @@
 
 
 #endif //__OCTANTCLASS_H_
-
+}
   /*
   USAGE:
   ARGUMENTS: ---

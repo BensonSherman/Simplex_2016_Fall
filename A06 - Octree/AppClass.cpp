@@ -9,7 +9,7 @@ void Application::InitVariables(void)
 		AXIS_Y);					//Up
 
 	m_pLightMngr->SetPosition(vector3(0.0f, 3.0f, 13.0f), 1); //set the position of first light (0 is reserved for ambient light)
-
+	
 #ifdef DEBUG
 	uint uInstances = 900;
 #else
@@ -30,6 +30,9 @@ void Application::InitVariables(void)
 		}
 	}
 	m_uOctantLevels = 1;
+
+	m_pRoot = new MyOctant(m_uOctantLevels, 5);
+
 	m_pEntityMngr->Update();
 }
 void Application::Update(void)

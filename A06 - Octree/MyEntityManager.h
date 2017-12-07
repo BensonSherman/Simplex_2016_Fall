@@ -7,6 +7,7 @@ Date: 2017/07
 
 #include "MyEntity.h"
 
+
 namespace Simplex
 {
 
@@ -17,7 +18,8 @@ class MyEntityManager
 	uint m_uEntityCount = 0; //number of elements in the list
 	PEntity* m_mEntityArray = nullptr; //array of MyEntity pointers
 	static MyEntityManager* m_pInstance; // Singleton pointer
-	
+	MyOctant* m_pRoot;
+
 public:
 	/*
 	Usage: Gets the singleton pointer
@@ -247,6 +249,8 @@ public:
 	OUTPUT: MyEntity count
 	*/
 	uint GetEntityCount(void);
+
+	void SetOctant(MyOctant* const a_pOctant);
 private:
 	/*
 	Usage: constructor

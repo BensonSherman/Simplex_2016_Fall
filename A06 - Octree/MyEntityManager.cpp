@@ -47,6 +47,10 @@ int Simplex::MyEntityManager::GetEntityIndex(String a_sUniqueID)
 }
 //Accessors
 Simplex::uint Simplex::MyEntityManager::GetEntityCount(void) {	return m_uEntityCount; }
+void Simplex::MyEntityManager::SetOctant(MyOctant * const a_pOctant)
+{
+	m_pRoot = a_pOctant;
+}
 Simplex::Model* Simplex::MyEntityManager::GetModel(uint a_uIndex)
 {
 	//if the list is empty return

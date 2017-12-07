@@ -34,6 +34,8 @@ namespace Simplex {
 
 		MyOctant* m_pRoot = nullptr;//Root octant
 		std::vector<MyOctant*> m_lChild; //list of nodes that contain objects (this will be applied to root only)
+		RigidBody* m_pRigidBody;
+
 
 	public:
 		/*
@@ -64,7 +66,7 @@ namespace Simplex {
 		ARGUMENTS: class object to copy
 		OUTPUT: ---
 		*/
-		MyOctant& operator=(MyOctant const& other);
+		
 		/*
 		USAGE: Destructor
 		ARGUMENTS: ---
